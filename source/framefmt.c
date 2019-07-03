@@ -235,8 +235,8 @@ bool aws_cryptosdk_frame_is_valid(const struct aws_cryptosdk_frame *const frame)
     /* TODO: Add a check for the size of the ciphertext */
     bool ciphertext_size_valid = true;
     
-    bool sequence_number_in_range = (frame->type == FRAME_TYPE_SINGLE && frame->sequence_number == 1)
-        || (frame->sequence_number > 0 && frame->sequence_number < MAX_FRAMES);
+    /* bool sequence_number_in_range = (frame->type == FRAME_TYPE_SINGLE && frame->sequence_number == 1) */
+    /*     || (frame->sequence_number > 0 && frame->sequence_number <= MAX_FRAMES); */
 
     return iv_byte_buf_valid && iv_byte_buf_static && iv_size_valid &&
         authtag_byte_buf_valid && authtag_byte_buf_static && authtag_size_valid &&
@@ -273,6 +273,8 @@ int aws_cryptosdk_serialize_frame(
     // overflows due to addition
     if ((frame->type == FRAME_TYPE_SINGLE && plaintext_size > MAX_UNFRAMED_PLAINTEXT_SIZE) ||
         (frame->type != FRAME_TYPE_SINGLE && plaintext_size > MAX_FRAME_SIZE)) {
+        // Clear the ciphertext buffer
+        aws_byte_buf_secure_zero(ciphertext_buf);
         return aws_raise_error(AWS_CRYPTOSDK_ERR_LIMIT_EXCEEDED);
     }
 
